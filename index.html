@@ -12,8 +12,12 @@
         .wallet-container { max-width: 500px; margin: 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; }
         .btn { background: #000; color: #fff; padding: 10px 20px; border-radius: 9999px; transition: all 0.3s ease; }
         .btn:hover { background: #333; transform: scale(1.05); }
-        .logo-text { font-size: 1.5rem; font-weight: 700; transition: font-size 0.3s ease; color: #000; text-align: center; margin-bottom: 0.5rem; }
+        .logo-text { font-size: 1.5rem; font-weight: 700; color: #000; text-align: center; margin-bottom: 0.5rem; }
         .balance-status { font-size: 0.9rem; color: #888; margin-top: 0.5rem; }
+        .input-field { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; }
+        .history-container { max-height: 200px; overflow-y: auto; border-top: 1px solid #ddd; padding-top: 10px; }
+        .history-item { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .history-type { font-weight: bold; }
     </style>
 </head>
 <body>
@@ -24,14 +28,26 @@
 
         <!-- Wallet Balance -->
         <div class="text-center mb-6">
-            <h2 class="text-lg font-semibold">Pi Balance (Testnet)</h2>
+            <h2 class="text-lg font-semibold">Pi Balance</h2>
             <p id="piBalance" class="text-3xl font-bold">Loading...</p>
-            <p class="text-sm text-gray-500">Stored Offline</p>
             <p class="balance-status" id="balanceStatus">Fetching balance...</p>
         </div>
 
+        <!-- Wallet Address -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-2">Your Pi Wallet Address</h3>
+            <input id="walletAddress" type="text" class="input-field" placeholder="Enter your public key" />
+            <button class="btn w-full" onclick="saveWalletAddress()">Save Address</button>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Transaction History</h3>
+            <div id="history" class="history-container text-sm text-gray-700">Loading...</div>
+        </div>
+
         <!-- Navigation Buttons -->
-        <div class="flex justify-center space-x-4 mb-6">
+        <div class="flex justify-center space-x-4 mt-6">
             <a href="receive.html" class="btn"><i class="fas fa-arrow-down mr-2"></i>Receive Pi</a>
             <a href="send.html" class="btn"><i class="fas fa-arrow-up mr-2"></i>Send Pi</a>
         </div>
@@ -44,19 +60,93 @@
         </div>
     </div>
 
-    <script src="wallet-api.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const balanceElement = document.getElementById('piBalance');
             const statusElement = document.getElementById('balanceStatus');
-            const storedBalance = localStorage.getItem('piBalance');
-            if (storedBalance) {
-                balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
-                statusElement.textContent = 'Loaded from cache';
+            const walletAddressInput = document.getElementById('walletAddress');
+            const historyElement = document.getElementById('history');
+
+            // Load saved address
+            const savedAddress = localStorage.getItem('piWalletAddress');
+            if (savedAddress) {
+                walletAddressInput.value = savedAddress;
+                fetchBalance(savedAddress, balanceElement, statusElement);
+                fetchTransactionHistory(savedAddress, historyElement);
+            } else {
+                balanceElement.textContent = "Enter wallet address to fetch balance.";
+                statusElement.textContent = "";
+                historyElement.textContent = "No history available.";
             }
-            updateBalance(balanceElement, statusElement);
-            setInterval(() => updateBalance(balanceElement, statusElement), 10000); // Poll every 10 seconds
+
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                if (walletAddressInput.value) {
+                    fetchBalance(walletAddressInput.value, balanceElement, statusElement);
+                    fetchTransactionHistory(walletAddressInput.value, historyElement);
+                }
+            }, 30000);
         });
+
+        function saveWalletAddress() {
+            const walletAddress = document.getElementById('walletAddress').value;
+            if (!walletAddress) {
+                alert("Please enter a valid wallet address.");
+                return;
+            }
+            localStorage.setItem('piWalletAddress', walletAddress);
+            alert("Wallet address saved!");
+            fetchBalance(walletAddress, document.getElementById('piBalance'), document.getElementById('balanceStatus'));
+            fetchTransactionHistory(walletAddress, document.getElementById('history'));
+        }
+
+        async function fetchBalance(address, balanceElement, statusElement) {
+            if (!address) {
+                balanceElement.textContent = "No address set.";
+                return;
+            }
+
+            try {
+                const server = new StellarSdk.Server('https://api.testnet.minepi.com');
+                const account = await server.loadAccount(address);
+                const balance = account.balances.find(b => b.asset_type === 'native').balance;
+
+                balanceElement.textContent = `${parseFloat(balance).toFixed(2)} π`;
+                statusElement.textContent = "Balance updated.";
+            } catch (error) {
+                console.error("Error fetching balance:", error);
+                balanceElement.textContent = "Error fetching balance.";
+                statusElement.textContent = "Check wallet address.";
+            }
+        }
+
+        async function fetchTransactionHistory(address, historyElement) {
+            if (!address) {
+                historyElement.textContent = "No transactions found.";
+                return;
+            }
+
+            try {
+                const server = new StellarSdk.Server('https://api.testnet.minepi.com');
+                const transactions = await server.transactions().forAccount(address).limit(10).order('desc').call();
+                
+                historyElement.innerHTML = "";
+                transactions.records.forEach(tx => {
+                    const amount = tx.amount || "Unknown";
+                    const type = tx.source_account === address ? "Sent" : "Received";
+                    historyElement.innerHTML += `
+                        <div class="history-item">
+                            <span class="history-type ${type === 'Sent' ? 'text-red-600' : 'text-green-600'}">${type}</span>
+                            <span>${parseFloat(amount).toFixed(2)} π</span>
+                        </div>
+                    `;
+                });
+
+            } catch (error) {
+                console.error("Error fetching transactions:", error);
+                historyElement.textContent = "Error fetching history.";
+            }
+        }
     </script>
 </body>
 </html>
