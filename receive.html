@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi TruthWeb - Receive Pi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
+        .wallet-container { max-width: 500px; margin: 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; }
+        .btn { background: #000; color: #fff; padding: 10px 20px; border-radius: 9999px; transition: all 0.3s ease; }
+        .btn:hover { background: #333; transform: scale(1.05); }
+        .logo-text { font-size: 1.5rem; font-weight: 700; transition: font-size 0.3s ease; color: #000; text-align: center; margin-bottom: 0.5rem; }
+        .instructions { font-size: 1.1rem; margin-bottom: 1.5rem; color: #555; text-align: center; }
+        .wallet-input { width: 100%; padding: 0.75rem; border: 1px solid #CCCCCC; border-radius: 5px; background: #f9f9f9; color: #000000; font-size: 1rem; margin-bottom: 0.75rem; font-family: 'Courier New', monospace; text-align: center; }
+        .copy-button { background: #000000; color: #FFFFFF; padding: 0.5rem 1rem; border: 1px solid #CCCCCC; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; width: 100%; max-width: 150px; margin: 0 auto; display: block; }
+        .copy-button:hover { background: #FFFFFF; color: #000000; }
+        .qr-option { display: flex; justify-content: center; align-items: center; flex-direction: column; margin: 1.5rem 0; }
+        .qr-image { max-width: 300px; width: 100%; height: auto; border: 2px solid #CCCCCC; border-radius: 10px; transition: transform 0.3s ease; }
+        .qr-image:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <div class="wallet-container">
+        <div class="logo-text">TruthWeb</div>
+        <h1 class="text-2xl font-bold text-center mb-2">Pi TruthWeb - Receive Pi</h1>
+        <p class="text-center text-sm text-gray-600 mb-6">Secure Your Pi, Offline.</p>
+
+        <!-- Wallet Balance -->
+        <div class="text-center mb-6">
+            <h2 class="text-lg font-semibold">Pi Balance (Testnet)</h2>
+            <p id="piBalance" class="text-3xl font-bold">Loading...</p>
+        </div>
+
+        <!-- Receive Section -->
+        <div id="direct-payment" class="mt-4">
+            <p class="instructions">Scan the QR code or copy the wallet address to send your Pi Balance directly to the Cold Wallet.</p>
+            <div class="qr-option">
+                <img src="https://i.ibb.co/B273Nzjj/Untitled-design-57-1.png" alt="QR Code for Payment" class="qr-image">
+                <p class="text-sm mt-2 opacity-75">Supports Pi Network Mainnet</p>
+            </div>
+            <div>
+                <p class="font-semibold mb-2 text-center">Cold Wallet Address:</p>
+                <input type="text" value="GDXC7DFLZFEDT65JA6I7DHHGG7OENSM7HZAKTSFFHAL3A3LFRREVNJWN" id="walletAddress" readonly class="wallet-input" aria-label="Wallet Address">
+                <button onclick="copyWallet()" class="copy-button">Copy Address</button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-center mt-6">
+            <a href="index.html" class="btn"><i class="fas fa-arrow-left mr-2"></i>Back to Wallet</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-6 text-center text-sm text-gray-600">
+            <p><i class="fas fa-lock mr-1"></i> Powered by TruthWeb</p>
+            <a href="https://truthweb.io" target="_blank" class="text-blue-600 hover:underline">truthweb.io</a>
+        </div>
+    </div>
+
+    <script>
+        // Load balance from localStorage
+        const balanceElement = document.getElementById('piBalance');
+        let balance = localStorage.getItem('piBalance') ? parseFloat(localStorage.getItem('piBalance')) : null;
+        balanceElement.textContent = balance ? `${balance.toFixed(2)} π (Test)` : 'Loading...';
+
+        // Copy Wallet Address
+        async function copyWallet() {
+            const copyText = document.getElementById("walletAddress");
+            const button = event.target;
+            try {
+                await navigator.clipboard.writeText(copyText.value);
+                button.textContent = 'Copied!';
+                button.style.background = '#28a745';
+                setTimeout(() => {
+                    button.textContent = 'Copy Address';
+                    button.style.background = '#000000';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy wallet address. Please copy it manually.');
+            }
+        }
+    </script>
+</body>
+</html>
