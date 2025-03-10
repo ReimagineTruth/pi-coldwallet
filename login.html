@@ -30,17 +30,15 @@
                 return;
             }
 
-            // Simulate user authentication (Replace this with real backend authentication)
             let storedBalance = localStorage.getItem(`balance_${username}`) || "0.00";
             let storedTransactions = localStorage.getItem(`transactions_${username}`) || "[]";
 
-            // Store logged-in user session
             localStorage.setItem("currentUser", username);
             localStorage.setItem("piBalance", storedBalance);
             localStorage.setItem("transactions", storedTransactions);
 
             alert(`Welcome, ${username}!`);
-            window.location.href = "index.html"; // Redirect to wallet
+            window.location.href = "index.html";
         }
     </script>
 
