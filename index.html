@@ -3,93 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi TruthWeb - Send Pi</title>
+    <title>Pi TruthWeb - Cold Wallet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.0.0/stellar-sdk.min.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
         .wallet-container { max-width: 500px; margin: 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; }
         .btn { background: #000; color: #fff; padding: 10px 20px; border-radius: 9999px; transition: all 0.3s ease; }
         .btn:hover { background: #333; transform: scale(1.05); }
-        .hidden { display: none; }
         .logo-text { font-size: 1.5rem; font-weight: 700; transition: font-size 0.3s ease; color: #000; text-align: center; margin-bottom: 0.5rem; }
+        .balance-status { font-size: 0.9rem; color: #888; margin-top: 0.5rem; }
     </style>
 </head>
 <body>
     <div class="wallet-container">
         <div class="logo-text">TruthWeb</div>
-        <h1 class="text-2xl font-bold text-center mb-2">Pi TruthWeb - Send Pi</h1>
+        <h1 class="text-2xl font-bold text-center mb-2">Pi TruthWeb - Cold Wallet</h1>
         <p class="text-center text-sm text-gray-600 mb-6">Secure Your Pi, Offline.</p>
 
         <!-- Wallet Balance -->
         <div class="text-center mb-6">
             <h2 class="text-lg font-semibold">Pi Balance (Testnet)</h2>
             <p id="piBalance" class="text-3xl font-bold">Loading...</p>
+            <p class="text-sm text-gray-500">Stored Offline</p>
+            <p class="balance-status" id="balanceStatus">Fetching balance...</p>
         </div>
 
-        <!-- Send Section -->
-        <div>
-            <h3 class="text-xl font-semibold mb-2">Send Pi</h3>
-            <p class="text-sm mb-4">Send Pi to a hot wallet or exchange.</p>
-            <div class="space-y-4">
-                <input id="sendAddress" type="text" placeholder="Enter Pi Address" class="w-full p-2 border rounded-lg">
-                <input id="sendAmount" type="number" placeholder="Amount (π)" class="w-full p-2 border rounded-lg" min="0" step="0.01">
-                <select id="sendType" class="w-full p-2 border rounded-lg">
-                    <option value="hot">Hot Wallet</option>
-                    <option value="exchange">Exchange</option>
-                </select>
-                <button class="btn w-full" onclick="simulateSend()">Send Pi</button>
-                <p id="sendStatus" class="text-sm text-green-600 hidden">Transaction Simulated!</p>
-            </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="flex justify-center mt-6">
-            <a href="index.html" class="btn"><i class="fas fa-arrow-left mr-2"></i>Back to Wallet</a>
+        <!-- Navigation Buttons -->
+        <div class="flex justify-center space-x-4 mb-6">
+            <a href="receive.html" class="btn"><i class="fas fa-arrow-down mr-2"></i>Receive Pi</a>
+            <a href="send.html" class="btn"><i class="fas fa-arrow-up mr-2"></i>Send Pi</a>
         </div>
 
         <!-- Footer -->
         <div class="mt-6 text-center text-sm text-gray-600">
             <p><i class="fas fa-lock mr-1"></i> Powered by TruthWeb</p>
+            <p>© 2025 TruthWeb. Licensed under the <a href="LICENSE" target="_blank" class="text-blue-600 hover:underline">MIT License</a>.</p>
             <a href="https://truthweb.io" target="_blank" class="text-blue-600 hover:underline">truthweb.io</a>
         </div>
     </div>
 
     <script src="wallet-api.js"></script>
     <script>
-        let balance;
         document.addEventListener('DOMContentLoaded', () => {
             const balanceElement = document.getElementById('piBalance');
+            const statusElement = document.getElementById('balanceStatus');
             const storedBalance = localStorage.getItem('piBalance');
-            if (storedBalance) balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
-            updateBalance(balanceElement, document.createElement('p')).then(b => balance = b); // Dummy status element
+            if (storedBalance) {
+                balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
+                statusElement.textContent = 'Loaded from cache';
+            }
+            updateBalance(balanceElement, statusElement);
+            setInterval(() => updateBalance(balanceElement, statusElement), 10000); // Poll every 10 seconds
         });
-
-        function simulateSend() {
-            const address = document.getElementById('sendAddress').value;
-            const amount = parseFloat(document.getElementById('sendAmount').value);
-            const type = document.getElementById('sendType').value;
-
-            if (!address || !amount || amount <= 0) {
-                alert('Please enter a valid address and amount.');
-                return;
-            }
-
-            if (!balance || amount > balance) {
-                alert('Insufficient Pi balance!');
-                return;
-            }
-
-            balance -= amount;
-            document.getElementById('piBalance').textContent = `${balance.toFixed(2)} π (Test)`;
-            localStorage.setItem('piBalance', balance);
-            document.getElementById('sendStatus').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('sendStatus').classList.add('hidden');
-                document.getElementById('sendAddress').value = '';
-                document.getElementById('sendAmount').value = '';
-            }, 2000);
-        }
     </script>
 </body>
 </html>
