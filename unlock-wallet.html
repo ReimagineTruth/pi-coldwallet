@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unlock Pi Wallet - TruthWeb</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
+        .wallet-container { max-width: 500px; margin: 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; text-align: center; }
+        .btn { background: #000; color: #fff; padding: 10px 12px; border-radius: 9999px; transition: all 0.3s ease; display: inline-block; width: 100%; }
+        .btn:hover { background: #333; transform: scale(1.05); }
+        .input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .error { color: red; font-size: 0.85rem; margin-top: 5px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="wallet-container">
+        <h1 class="text-2xl font-bold mb-2">Unlock Your Pi Wallet</h1>
+        <p class="text-sm text-gray-600 mb-4">Enter your 24-word passphrase to access your wallet.</p>
+
+        <textarea id="passphrase" class="input" rows="3" placeholder="Enter your 24-word passphrase"></textarea>
+        <p id="errorMessage" class="error">Invalid passphrase. Please check and try again.</p>
+        <button onclick="unlockWallet()" class="btn mt-3"><i class="fas fa-unlock mr-2"></i>Unlock Wallet</button>
+
+        <!-- Footer -->
+        <div class="mt-6 text-center text-sm text-gray-600">
+            <p><i class="fas fa-lock mr-1"></i> Powered by TruthWeb</p>
+            <p>© 2025 TruthWeb. Licensed under the <a href="LICENSE" target="_blank" class="text-blue-600 hover:underline">MIT License</a>.</p>
+        </div>
+    </div>
+
+    <script>
+        async function unlockWallet() {
+            const passphrase = document.getElementById('passphrase').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+
+            if (passphrase.split(' ').length !== 24) {
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            errorMessage.style.display = 'none';
+
+            // Encrypt passphrase before storing
+            const encryptedPassphrase = CryptoJS.AES.encrypt(passphrase, 'pi-wallet-secret').toString();
+            localStorage.setItem('piWalletPassphrase', encryptedPassphrase);
+
+            // Connect to Pi Network API (Placeholder for real integration)
+            try {
+                const response = await fetch('https://api.minepi.com/wallet/unlock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passphrase: passphrase })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('piWalletAddress', data.walletAddress);
+                    window.location.href = 'wallet.html';
+                } else {
+                    errorMessage.textContent = 'Failed to unlock wallet. Please check your passphrase.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Network error. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
