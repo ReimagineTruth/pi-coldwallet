@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Route to get wallet balance
+// Get wallet balance
 app.get('/balance', async (req, res) => {
     try {
         const balance = await fetchBalance();
@@ -16,7 +16,7 @@ app.get('/balance', async (req, res) => {
     }
 });
 
-// Route to get transaction history
+// Get transaction history
 app.get('/transactions', async (req, res) => {
     try {
         const transactions = await fetchTransactionHistory();
@@ -26,7 +26,7 @@ app.get('/transactions', async (req, res) => {
     }
 });
 
-// Route to send Pi transaction
+// Send Pi transaction
 app.post('/send', async (req, res) => {
     const { destination, amount } = req.body;
     try {
@@ -38,4 +38,6 @@ app.post('/send', async (req, res) => {
 });
 
 const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
