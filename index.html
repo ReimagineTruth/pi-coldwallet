@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi TruthWeb - Cold Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Stellar SDK for potential real Testnet integration -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.0.0/stellar-sdk.min.js"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
+        .wallet-container { max-width: 500px; margin: 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; }
+        .btn { background: #000; color: #fff; padding: 10px 20px; border-radius: 9999px; transition: all 0.3s ease; }
+        .btn:hover { background: #333; transform: scale(1.05); }
+        .logo-text { font-size: 1.5rem; font-weight: 700; transition: font-size 0.3s ease; color: #000; text-align: center; margin-bottom: 0.5rem; }
+        .balance-status { font-size: 0.9rem; color: #888; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="wallet-container">
+        <div class="logo-text">TruthWeb</div>
+        <h1 class="text-2xl font-bold text-center mb-2">Pi TruthWeb - Cold Wallet</h1>
+        <p class="text-center text-sm text-gray-600 mb-6">Secure Your Pi, Offline.</p>
+
+        <!-- Wallet Balance -->
+        <div class="text-center mb-6">
+            <h2 class="text-lg font-semibold">Pi Balance (Testnet)</h2>
+            <p id="piBalance" class="text-3xl font-bold">Loading...</p>
+            <p class="text-sm text-gray-500">Stored Offline</p>
+            <p class="balance-status" id="balanceStatus">Fetching balance...</p>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-center space-x-4 mb-6">
+            <a href="receive.html" class="btn"><i class="fas fa-arrow-down mr-2"></i>Receive Pi</a>
+            <a href="send.html" class="btn"><i class="fas fa-arrow-up mr-2"></i>Send Pi</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-6 text-center text-sm text-gray-600">
+            <p><i class="fas fa-lock mr-1"></i> Powered by TruthWeb</p>
+            <a href="https://truthweb.io" target="_blank" class="text-blue-600 hover:underline">truthweb.io</a>
+        </div>
+    </div>
+
+    <script>
+        // Pi Testnet configuration
+        const WALLET_ADDRESS = 'GDXC7DFLZFEDT65JA6I7DHHGG7OENSM7HZAKTSFFHAL3A3LFRREVNJWN';
+
+        // Simulated Testnet balance fetch
+        async function fetchTestnetBalance() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const simulatedBalance = (Math.random() * 200 + 900).toFixed(2); // 900–1100 Test-Pi
+                    resolve({ balance: simulatedBalance });
+                }, 1000); // Simulate network delay
+            });
+        }
+
+        // Update balance display
+        async function updateBalance() {
+            const balanceElement = document.getElementById('piBalance');
+            const statusElement = document.getElementById('balanceStatus');
+
+            try {
+                const response = await fetchTestnetBalance();
+                const balance = parseFloat(response.balance);
+                balanceElement.textContent = `${balance} π (Test)`;
+                statusElement.textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+                localStorage.setItem('piBalance', balance);
+            } catch (error) {
+                console.error('Balance fetch error:', error);
+                balanceElement.textContent = 'Error';
+                statusElement.textContent = 'Failed to fetch balance';
+                const cachedBalance = localStorage.getItem('piBalance');
+                if (cachedBalance) balanceElement.textContent = `${parseFloat(cachedBalance).toFixed(2)} π (Test)`;
+            }
+        }
+
+        // Initial load and polling
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedBalance = localStorage.getItem('piBalance');
+            if (storedBalance) {
+                document.getElementById('piBalance').textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
+                document.getElementById('balanceStatus').textContent = 'Loaded from cache';
+            }
+            updateBalance();
+            setInterval(updateBalance, 10000); // Poll every 10 seconds
+        });
+    </script>
+</body>
+</html>
