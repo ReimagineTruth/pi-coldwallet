@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TruthWeb Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+        <h2 class="text-center text-2xl font-bold mb-4">Create an Account</h2>
+
+        <label class="block mb-2">Username</label>
+        <input type="text" id="newUsername" class="w-full p-2 border rounded mb-3" required>
+
+        <label class="block mb-2">Password</label>
+        <input type="password" id="newPassword" class="w-full p-2 border rounded mb-3" required>
+
+        <button onclick="register()" class="w-full bg-black text-white py-2 rounded">Register</button>
+
+        <p class="text-center mt-3"><a href="login.html" class="text-blue-600">Already have an account? Login</a></p>
+    </div>
+
+    <script>
+        function register() {
+            let username = document.getElementById("newUsername").value.trim();
+            let password = document.getElementById("newPassword").value.trim();
+
+            if (localStorage.getItem(`user_${username}`)) {
+                alert("Username already exists!");
+                return;
+            }
+
+            localStorage.setItem(`user_${username}`, JSON.stringify({ username, password }));
+            alert("Account created successfully! Redirecting to login.");
+            window.location.href = "login.html";
+        }
+    </script>
+
+</body>
+</html>
