@@ -6,7 +6,6 @@
     <title>Pi TruthWeb - Cold Wallet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <!-- Stellar SDK for potential real Testnet integration -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.0.0/stellar-sdk.min.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
@@ -44,49 +43,18 @@
         </div>
     </div>
 
+    <script src="wallet-api.js"></script>
     <script>
-        // Pi Testnet configuration
-        const WALLET_ADDRESS = 'GDXC7DFLZFEDT65JA6I7DHHGG7OENSM7HZAKTSFFHAL3A3LFRREVNJWN';
-
-        // Simulated Testnet balance fetch
-        async function fetchTestnetBalance() {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const simulatedBalance = (Math.random() * 200 + 900).toFixed(2); // 900–1100 Test-Pi
-                    resolve({ balance: simulatedBalance });
-                }, 1000); // Simulate network delay
-            });
-        }
-
-        // Update balance display
-        async function updateBalance() {
+        document.addEventListener('DOMContentLoaded', () => {
             const balanceElement = document.getElementById('piBalance');
             const statusElement = document.getElementById('balanceStatus');
-
-            try {
-                const response = await fetchTestnetBalance();
-                const balance = parseFloat(response.balance);
-                balanceElement.textContent = `${balance} π (Test)`;
-                statusElement.textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-                localStorage.setItem('piBalance', balance);
-            } catch (error) {
-                console.error('Balance fetch error:', error);
-                balanceElement.textContent = 'Error';
-                statusElement.textContent = 'Failed to fetch balance';
-                const cachedBalance = localStorage.getItem('piBalance');
-                if (cachedBalance) balanceElement.textContent = `${parseFloat(cachedBalance).toFixed(2)} π (Test)`;
-            }
-        }
-
-        // Initial load and polling
-        document.addEventListener('DOMContentLoaded', () => {
             const storedBalance = localStorage.getItem('piBalance');
             if (storedBalance) {
-                document.getElementById('piBalance').textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
-                document.getElementById('balanceStatus').textContent = 'Loaded from cache';
+                balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
+                statusElement.textContent = 'Loaded from cache';
             }
-            updateBalance();
-            setInterval(updateBalance, 10000); // Poll every 10 seconds
+            updateBalance(balanceElement, statusElement);
+            setInterval(() => updateBalance(balanceElement, statusElement), 10000); // Poll every 10 seconds
         });
     </script>
 </body>
