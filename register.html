@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - TruthWeb Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+        <h2 class="text-center text-2xl font-bold mb-4">Create Your Wallet</h2>
+
+        <label class="block mb-2">Username</label>
+        <input type="text" id="newUsername" class="w-full p-2 border rounded mb-3">
+
+        <label class="block mb-2">Password</label>
+        <input type="password" id="newPassword" class="w-full p-2 border rounded mb-3">
+
+        <button onclick="register()" class="w-full bg-black text-white py-2 rounded">Register</button>
+
+        <p class="text-center mt-3">Already have an account? <a href="login.html" class="text-blue-600">Login here</a></p>
+    </div>
+
+    <script>
+        function register() {
+            let username = document.getElementById("newUsername").value.trim();
+            let password = document.getElementById("newPassword").value.trim();
+
+            if (!username || !password) {
+                alert("Please enter both a username and a password.");
+                return;
+            }
+
+            // Check if the username already exists
+            if (localStorage.getItem(`user_${username}`)) {
+                alert("Username already taken! Try a different one.");
+                return;
+            }
+
+            // Store user credentials securely
+            localStorage.setItem(`user_${username}`, JSON.stringify({ password }));
+
+            // Initialize wallet balance & transactions
+            localStorage.setItem(`balance_${username}`, "0.00");
+            localStorage.setItem(`transactions_${username}`, JSON.stringify([]));
+
+            alert(`Account created successfully! Welcome, ${username}!`);
+            window.location.href = "login.html";
+        }
+    </script>
+
+</body>
+</html>
