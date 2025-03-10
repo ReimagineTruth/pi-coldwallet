@@ -3,72 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi TruthWeb - Cold Wallet</title>
+    <title>TruthWeb - Pi Wallet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.0.0/stellar-sdk.min.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
         .wallet-container { max-width: 500px; margin: 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; }
         .btn { background: #000; color: #fff; padding: 10px 20px; border-radius: 9999px; transition: all 0.3s ease; }
         .btn:hover { background: #333; transform: scale(1.05); }
-        .input-field { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
+        .logo-text { font-size: 1.5rem; font-weight: 700; transition: font-size 0.3s ease; color: #000; text-align: center; margin-bottom: 0.5rem; }
+        .input-field { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="wallet-container">
-        <h1 class="text-2xl font-bold text-center mb-4">Pi TruthWeb - Cold Wallet</h1>
-
-        <!-- Pasphrase Input -->
-        <label class="block mb-2 font-semibold">Enter Pasphrase (Secret Key)</label>
-        <input type="password" id="secretKey" class="input-field" placeholder="SCNCBXQ... (Your private key)">
-        <button onclick="storeSecretKey()" class="btn w-full mb-4">Unlock Wallet</button>
+        <div class="logo-text">TruthWeb</div>
+        <h1 class="text-2xl font-bold text-center mb-2">Your Pi Wallet</h1>
+        <p class="text-center text-sm text-gray-600 mb-6">Manage your Pi safely.</p>
 
         <!-- Wallet Balance -->
-        <div class="text-center mb-4">
-            <h2 class="text-lg font-semibold">Pi Balance (Testnet)</h2>
-            <p id="piBalance" class="text-3xl font-bold">Loading...</p>
+        <div class="text-center mb-6">
+            <h2 class="text-lg font-semibold">Current Balance</h2>
+            <p id="walletBalance" class="text-3xl font-bold">Loading...</p>
             <p class="text-sm text-gray-500">Stored Offline</p>
         </div>
 
-        <!-- Send & Receive Buttons -->
-        <div class="flex justify-center space-x-4 mb-4">
-            <button onclick="receivePi()" class="btn"><i class="fas fa-arrow-down mr-2"></i>Receive Pi</button>
-            <button onclick="sendPi()" class="btn"><i class="fas fa-arrow-up mr-2"></i>Send Pi</button>
+        <!-- Passphrase Section -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold">Wallet Passphrase</h3>
+            <input type="password" id="passphrase" class="input-field" placeholder="Enter passphrase">
+            <button onclick="storePassphrase()" class="btn mt-2 w-full"><i class="fas fa-save mr-2"></i>Save Passphrase</button>
         </div>
-        
-        <!-- Transaction History -->
-        <h3 class="text-lg font-semibold text-center mt-4">Transaction History</h3>
-        <ul id="transactionHistory" class="text-sm text-gray-700">Loading transactions...</ul>
+
+        <!-- Navigation Buttons -->
+        <div class="flex justify-center space-x-4 mb-6">
+            <a href="send.html" class="btn"><i class="fas fa-arrow-up mr-2"></i>Send Pi</a>
+            <a href="receive.html" class="btn"><i class="fas fa-arrow-down mr-2"></i>Receive Pi</a>
+        </div>
+
+        <!-- Back to Main -->
+        <div class="text-center">
+            <a href="index.html" class="btn"><i class="fas fa-home mr-2"></i>Back to Home</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-6 text-center text-sm text-gray-600">
+            <p><i class="fas fa-lock mr-1"></i> Powered by TruthWeb</p>
+            <p>© 2025 TruthWeb. Licensed under the <a href="LICENSE" target="_blank" class="text-blue-600 hover:underline">MIT License</a>.</p>
+        </div>
     </div>
 
     <script>
-        let secretKey = '';
+        document.addEventListener('DOMContentLoaded', () => {
+            const walletBalance = document.getElementById('walletBalance');
+            const storedBalance = localStorage.getItem('piBalance');
 
-        function storeSecretKey() {
-            const inputKey = document.getElementById('secretKey').value;
-            if (!inputKey.startsWith("S")) {
-                alert("Invalid secret key format!");
-                return;
+            if (storedBalance) {
+                walletBalance.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
+            } else {
+                walletBalance.textContent = '0.00 π';
             }
-            secretKey = inputKey;  // Temporarily store in memory (not localStorage for security)
-            alert("Wallet Unlocked Successfully!");
-        }
+        });
 
-        async function receivePi() {
-            if (!secretKey) {
-                alert("Enter your secret key first!");
-                return;
+        function storePassphrase() {
+            const passphrase = document.getElementById('passphrase').value;
+            if (passphrase) {
+                localStorage.setItem('walletPassphrase', btoa(passphrase)); // Base64 Encoding
+                alert('Passphrase saved securely!');
+            } else {
+                alert('Please enter a passphrase.');
             }
-            alert("Receiving Pi... Feature Coming Soon!");
-        }
-
-        async function sendPi() {
-            if (!secretKey) {
-                alert("Enter your secret key first!");
-                return;
-            }
-            alert("Sending Pi... Feature Coming Soon!");
         }
     </script>
 </body>
