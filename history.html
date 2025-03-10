@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="wallet-api.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-xl font-bold">Transaction History</h1>
+        <ul id="historyList"></ul>
+        <a href="index.html" class="btn mt-4 block">Back</a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const historyList = document.getElementById("historyList");
+            const transactions = await fetchTransactionHistory();
+            transactions.forEach(tx => {
+                const li = document.createElement("li");
+                li.textContent = `Sent ${tx.amount} Pi to ${tx.recipient}`;
+                historyList.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>
