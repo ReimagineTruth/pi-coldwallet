@@ -11,37 +11,68 @@
     <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
         <h2 class="text-center text-2xl font-bold mb-4">Create Your Wallet</h2>
 
+        <label class="block mb-2">Email</label>
+        <input type="email" id="email" class="w-full p-2 border rounded mb-3" required>
+
         <label class="block mb-2">Username</label>
-        <input type="text" id="newUsername" class="w-full p-2 border rounded mb-3">
+        <input type="text" id="newUsername" class="w-full p-2 border rounded mb-3" required>
 
         <label class="block mb-2">Password</label>
-        <input type="password" id="newPassword" class="w-full p-2 border rounded mb-3">
+        <input type="password" id="newPassword" class="w-full p-2 border rounded mb-3" required>
 
-        <button onclick="register()" class="w-full bg-black text-white py-2 rounded">Register</button>
+        <button onclick="sendVerificationCode()" class="w-full bg-black text-white py-2 rounded">Get Verification Code</button>
+
+        <div id="verificationSection" class="mt-4 hidden">
+            <label class="block mb-2">Enter Verification Code</label>
+            <input type="text" id="verificationCode" class="w-full p-2 border rounded mb-3">
+            <button onclick="register()" class="w-full bg-green-600 text-white py-2 rounded">Verify & Register</button>
+        </div>
 
         <p class="text-center mt-3">Already have an account? <a href="login.html" class="text-blue-600">Login here</a></p>
     </div>
 
     <script>
-        function register() {
-            let username = document.getElementById("newUsername").value.trim();
-            let password = document.getElementById("newPassword").value.trim();
+        let generatedCode = "";
 
-            if (!username || !password) {
-                alert("Please enter both a username and a password.");
+        function sendVerificationCode() {
+            let email = document.getElementById("email").value.trim();
+            if (!email) {
+                alert("Please enter your email.");
                 return;
             }
 
-            // Check if the username already exists
-            if (localStorage.getItem(`user_${username}`)) {
-                alert("Username already taken! Try a different one.");
+            // Generate 6-digit verification code
+            generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+            alert(`Your verification code is: ${generatedCode}`); // Simulate email sending
+
+            document.getElementById("verificationSection").classList.remove("hidden");
+        }
+
+        function register() {
+            let username = document.getElementById("newUsername").value.trim();
+            let password = document.getElementById("newPassword").value.trim();
+            let email = document.getElementById("email").value.trim();
+            let userCode = document.getElementById("verificationCode").value.trim();
+
+            if (userCode !== generatedCode) {
+                alert("Incorrect verification code.");
+                return;
+            }
+
+            if (!username || !password) {
+                alert("Please enter all details.");
+                return;
+            }
+
+            // Prevent duplicate accounts
+            if (localStorage.getItem(`user_${username}`) || localStorage.getItem(`email_${email}`)) {
+                alert("Username or email already registered.");
                 return;
             }
 
             // Store user credentials securely
-            localStorage.setItem(`user_${username}`, JSON.stringify({ password }));
-
-            // Initialize wallet balance & transactions
+            localStorage.setItem(`user_${username}`, JSON.stringify({ password, email }));
+            localStorage.setItem(`email_${email}`, username);
             localStorage.setItem(`balance_${username}`, "0.00");
             localStorage.setItem(`transactions_${username}`, JSON.stringify([]));
 
