@@ -1,9 +1,12 @@
-pi-truthweb-cold-wallet/
-├── index.html
-├── receive.html
-├── send.html
-├── wallet-api.js
-├── LICENSE
-├── CODE_OF_CONDUCT.md
-├── SECURITY.md
-└── README.md
+pi-cold-wallet/
+│── index.html         # Frontend UI for wallet interaction
+│── style.css         # Styling for the wallet UI
+│── wallet.js         # Handles UI logic and interaction
+│── api/
+│   ├── wallet-api.js  # Handles blockchain interactions (fetch balance, send transactions, etc.)
+│── server/
+│   ├── server.js      # Backend server (Node.js & Express) to handle API requests securely
+│── config/
+│   ├── config.js      # Stores wallet settings (e.g., secret key, API URLs)
+│── package.json       # Dependencies for backend setup
+│── README.md          # Documentation on how to use and set up
