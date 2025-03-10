@@ -59,13 +59,15 @@
         </div>
     </div>
 
+    <script src="wallet-api.js"></script>
     <script>
-        // Load balance from localStorage
-        const balanceElement = document.getElementById('piBalance');
-        let balance = localStorage.getItem('piBalance') ? parseFloat(localStorage.getItem('piBalance')) : null;
-        balanceElement.textContent = balance ? `${balance.toFixed(2)} π (Test)` : 'Loading...';
+        document.addEventListener('DOMContentLoaded', () => {
+            const balanceElement = document.getElementById('piBalance');
+            const storedBalance = localStorage.getItem('piBalance');
+            if (storedBalance) balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
+            updateBalance(balanceElement, document.createElement('p')); // Dummy status element
+        });
 
-        // Copy Wallet Address
         async function copyWallet() {
             const copyText = document.getElementById("walletAddress");
             const button = event.target;
