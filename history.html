@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - Pi Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 30px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; }
+        .title { font-size: 1.8rem; font-weight: 700; text-align: center; color: #000; }
+        .transactions { margin-top: 20px; }
+        .tx-item { background: #f9f9f9; padding: 10px; margin-bottom: 10px; border-radius: 5px; border-left: 5px solid #000; }
+        .tx-meta { font-size: 0.9rem; color: #555; }
+        .tx-hash { font-size: 0.8rem; word-wrap: break-word; }
+        .loading { text-align: center; font-size: 1rem; color: #888; }
+        .back-btn { display: block; width: 100%; padding: 12px; margin-top: 10px; border: none; background-color: #000; color: #fff; border-radius: 5px; text-align: center; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+        .back-btn:hover { background-color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="title"><i class="fa fa-history"></i> Transaction History</h1>
+        <p class="text-center text-sm text-gray-600">Latest transactions from your Pi Wallet</p>
+
+        <div id="transactions" class="transactions">
+            <p class="loading">Fetching transactions...</p>
+        </div>
+
+        <button class="back-btn" onclick="location.href='index.html'">
+            <i class="fa fa-arrow-left"></i> Back to Wallet
+        </button>
+    </div>
+
+    <script>
+        async function fetchTransactions() {
+            const accountID = "GDXC7DFLZFEDT65JA6I7DHHGG7OENSM7HZAKTSFFHAL3A3LFRREVNJWN";
+            const url = `https://api.testnet.minepi.com/accounts/${accountID}/transactions`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const transactions = data._embedded.records;
+
+                const transactionContainer = document.getElementById('transactions');
+                transactionContainer.innerHTML = "";
+
+                if (transactions.length === 0) {
+                    transactionContainer.innerHTML = "<p class='loading'>No transactions found.</p>";
+                    return;
+                }
+
+                transactions.forEach(tx => {
+                    const txElement = document.createElement("div");
+                    txElement.className = "tx-item";
+                    txElement.innerHTML = `
+                        <p><strong>Amount:</strong> ${tx.amount || "N/A"} π</p>
+                        <p><strong>Type:</strong> ${tx.operation_type.replace("_", " ").toUpperCase()}</p>
+                        <p><strong>Sender:</strong> ${tx.source_account}</p>
+                        <p><strong>Time:</strong> ${new Date(tx.created_at).toLocaleString()}</p>
+                        <p class="tx-meta"><strong>Transaction ID:</strong> <span class="tx-hash">${tx.id}</span></p>
+                    `;
+                    transactionContainer.appendChild(txElement);
+                });
+
+            } catch (error) {
+                document.getElementById('transactions').innerHTML = "<p class='loading'>Error loading transactions.</p>";
+                console.error("Transaction fetch error:", error);
+            }
+        }
+
+        fetchTransactions();
+    </script>
+
+</body>
+</html>
