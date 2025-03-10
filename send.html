@@ -51,17 +51,21 @@
         <!-- Footer -->
         <div class="mt-6 text-center text-sm text-gray-600">
             <p><i class="fas fa-lock mr-1"></i> Powered by TruthWeb</p>
+            <p>© 2025 TruthWeb. Licensed under the <a href="LICENSE" target="_blank" class="text-blue-600 hover:underline">MIT License</a>.</p>
             <a href="https://truthweb.io" target="_blank" class="text-blue-600 hover:underline">truthweb.io</a>
         </div>
     </div>
 
+    <script src="wallet-api.js"></script>
     <script>
-        // Load balance from localStorage
-        const balanceElement = document.getElementById('piBalance');
-        let balance = localStorage.getItem('piBalance') ? parseFloat(localStorage.getItem('piBalance')) : null;
-        balanceElement.textContent = balance ? `${balance.toFixed(2)} π (Test)` : 'Loading...';
+        let balance;
+        document.addEventListener('DOMContentLoaded', () => {
+            const balanceElement = document.getElementById('piBalance');
+            const storedBalance = localStorage.getItem('piBalance');
+            if (storedBalance) balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
+            updateBalance(balanceElement, document.createElement('p')).then(b => balance = b); // Dummy status element
+        });
 
-        // Simulate Sending Pi
         function simulateSend() {
             const address = document.getElementById('sendAddress').value;
             const amount = parseFloat(document.getElementById('sendAmount').value);
@@ -78,7 +82,7 @@
             }
 
             balance -= amount;
-            balanceElement.textContent = `${balance.toFixed(2)} π (Test)`;
+            document.getElementById('piBalance').textContent = `${balance.toFixed(2)} π (Test)`;
             localStorage.setItem('piBalance', balance);
             document.getElementById('sendStatus').classList.remove('hidden');
             setTimeout(() => {
