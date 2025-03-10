@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TruthWeb Custodial Wallet - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+        <h2 class="text-center text-2xl font-bold mb-4">Login to Your Wallet</h2>
+
+        <label class="block mb-2">Username</label>
+        <input type="text" id="username" class="w-full p-2 border rounded mb-3">
+
+        <label class="block mb-2">Password</label>
+        <input type="password" id="password" class="w-full p-2 border rounded mb-3">
+
+        <button onclick="login()" class="w-full bg-black text-white py-2 rounded">Login</button>
+    </div>
+
+    <script>
+        function login() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+
+            if (!username || !password) {
+                alert("Please enter both username and password.");
+                return;
+            }
+
+            // Simulate user authentication (Replace this with real backend authentication)
+            let storedBalance = localStorage.getItem(`balance_${username}`) || "0.00";
+            let storedTransactions = localStorage.getItem(`transactions_${username}`) || "[]";
+
+            // Store logged-in user session
+            localStorage.setItem("currentUser", username);
+            localStorage.setItem("piBalance", storedBalance);
+            localStorage.setItem("transactions", storedTransactions);
+
+            alert(`Welcome, ${username}!`);
+            window.location.href = "index.html"; // Redirect to wallet
+        }
+    </script>
+
+</body>
+</html>
