@@ -15,6 +15,7 @@
         .logo-text { font-size: 1.5rem; font-weight: 700; transition: font-size 0.3s ease; color: #000; text-align: center; margin-bottom: 0.5rem; }
         .balance-status { font-size: 0.9rem; color: #888; margin-top: 0.5rem; }
         .history-container { max-height: 200px; overflow-y: auto; border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px; }
+        .tx-item { background: #f9f9f9; padding: 8px; margin-bottom: 5px; border-radius: 5px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -58,37 +59,79 @@
         </div>
     </div>
 
-    <script src="wallet-api.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const balanceElement = document.getElementById('piBalance');
-            const statusElement = document.getElementById('balanceStatus');
-            const transactionHistory = document.getElementById('transactionHistory');
+        const accountID = "GDXC7DFLZFEDT65JA6I7DHHGG7OENSM7HZAKTSFFHAL3A3LFRREVNJWN";
+        const apiUrl = `https://blockexplorer.minepi.com/testnet/accounts/${accountID}`;
 
+        async function fetchBalance() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                const balance = data.balances.find(b => b.asset_type === "native")?.balance || "0";
+                
+                document.getElementById('piBalance').textContent = `${parseFloat(balance).toFixed(2)} π (Test)`;
+                document.getElementById('balanceStatus').textContent = 'Balance updated';
+
+                localStorage.setItem('piBalance', balance);
+            } catch (error) {
+                console.error("Error fetching balance:", error);
+                document.getElementById('balanceStatus').textContent = 'Failed to fetch balance';
+            }
+        }
+
+        async function fetchTransactionHistory() {
+            try {
+                const response = await fetch(`${apiUrl}/transactions`);
+                const data = await response.json();
+                const transactions = data._embedded.records;
+
+                const transactionHistory = document.getElementById('transactionHistory');
+                transactionHistory.innerHTML = "";
+
+                if (transactions.length === 0) {
+                    transactionHistory.innerHTML = "<li>No transactions found.</li>";
+                    return;
+                }
+
+                transactions.forEach(tx => {
+                    const txElement = document.createElement("li");
+                    txElement.className = "tx-item";
+                    txElement.innerHTML = `
+                        <p><strong>Type:</strong> ${tx.operation_type.replace("_", " ").toUpperCase()}</p>
+                        <p><strong>Amount:</strong> ${tx.amount || "N/A"} π</p>
+                        <p><strong>Time:</strong> ${new Date(tx.created_at).toLocaleString()}</p>
+                        <p><strong>Transaction ID:</strong> ${tx.id.slice(0, 10)}...</p>
+                    `;
+                    transactionHistory.appendChild(txElement);
+                });
+
+                localStorage.setItem('piTransactions', JSON.stringify(transactions.map(tx => 
+                    `${new Date(tx.created_at).toLocaleString()} - ${tx.operation_type.toUpperCase()} ${tx.amount || "N/A"} π`
+                )));
+            } catch (error) {
+                console.error("Error fetching transactions:", error);
+                document.getElementById('transactionHistory').innerHTML = "<li>Failed to load transactions.</li>";
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
             const storedBalance = localStorage.getItem('piBalance');
             const storedHistory = JSON.parse(localStorage.getItem('piTransactions')) || [];
 
             if (storedBalance) {
-                balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
-                statusElement.textContent = 'Loaded from cache';
+                document.getElementById('piBalance').textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
+                document.getElementById('balanceStatus').textContent = 'Loaded from cache';
             }
 
-            // Load transaction history
-            transactionHistory.innerHTML = storedHistory.length 
-                ? storedHistory.map(tx => `<li>${tx}</li>`).join('')
-                : '<li>No transactions yet.</li>';
+            if (storedHistory.length) {
+                document.getElementById('transactionHistory').innerHTML = storedHistory.map(tx => `<li class="tx-item">${tx}</li>`).join('');
+            }
 
-            updateBalance(balanceElement, statusElement);
-            setInterval(() => updateBalance(balanceElement, statusElement), 10000);
+            fetchBalance();
+            fetchTransactionHistory();
+            setInterval(fetchBalance, 15000);
+            setInterval(fetchTransactionHistory, 30000);
         });
-
-        function addTransaction(type, amount, recipient = '') {
-            const history = JSON.parse(localStorage.getItem('piTransactions')) || [];
-            const timestamp = new Date().toLocaleString();
-            const newTransaction = `${timestamp} - ${type}: ${amount} π ${recipient ? 'to ' + recipient : ''}`;
-            history.unshift(newTransaction);
-            localStorage.setItem('piTransactions', JSON.stringify(history));
-        }
     </script>
 </body>
 </html>
