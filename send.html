@@ -6,6 +6,7 @@
     <title>Pi TruthWeb - Send Pi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.0.0/stellar-sdk.min.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }
         .wallet-container { max-width: 500px; margin: 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 20px; }
@@ -30,16 +31,13 @@
         <!-- Send Section -->
         <div>
             <h3 class="text-xl font-semibold mb-2">Send Pi</h3>
-            <p class="text-sm mb-4">Send Pi to a hot wallet or exchange.</p>
+            <p class="text-sm mb-4">Send Pi to another wallet securely.</p>
             <div class="space-y-4">
                 <input id="sendAddress" type="text" placeholder="Enter Pi Address" class="w-full p-2 border rounded-lg">
                 <input id="sendAmount" type="number" placeholder="Amount (π)" class="w-full p-2 border rounded-lg" min="0" step="0.01">
-                <select id="sendType" class="w-full p-2 border rounded-lg">
-                    <option value="hot">Hot Wallet</option>
-                    <option value="exchange">Exchange</option>
-                </select>
-                <button class="btn w-full" onclick="simulateSend()">Send Pi</button>
-                <p id="sendStatus" class="text-sm text-green-600 hidden">Transaction Simulated!</p>
+                <input id="privateKey" type="password" placeholder="Enter Private Key" class="w-full p-2 border rounded-lg">
+                <button class="btn w-full" onclick="sendPi()">Send Pi</button>
+                <p id="sendStatus" class="text-sm text-green-600 hidden">Transaction Sent!</p>
             </div>
         </div>
 
@@ -56,40 +54,74 @@
         </div>
     </div>
 
-    <script src="wallet-api.js"></script>
     <script>
-        let balance;
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const balanceElement = document.getElementById('piBalance');
             const storedBalance = localStorage.getItem('piBalance');
-            if (storedBalance) balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
-            updateBalance(balanceElement, document.createElement('p')).then(b => balance = b); // Dummy status element
+            if (storedBalance) {
+                balanceElement.textContent = `${parseFloat(storedBalance).toFixed(2)} π (Test)`;
+            } else {
+                balanceElement.textContent = "0 π (Test)";
+            }
         });
 
-        function simulateSend() {
+        async function sendPi() {
             const address = document.getElementById('sendAddress').value;
             const amount = parseFloat(document.getElementById('sendAmount').value);
-            const type = document.getElementById('sendType').value;
+            const privateKey = document.getElementById('privateKey').value;
 
-            if (!address || !amount || amount <= 0) {
-                alert('Please enter a valid address and amount.');
+            if (!address || !amount || amount <= 0 || !privateKey) {
+                alert('Please enter a valid address, amount, and private key.');
                 return;
             }
 
-            if (!balance || amount > balance) {
-                alert('Insufficient Pi balance!');
-                return;
-            }
+            try {
+                const server = new StellarSdk.Server('https://api.testnet.minepi.com');
+                const sourceKeypair = StellarSdk.Keypair.fromSecret(privateKey);
+                const sourcePublicKey = sourceKeypair.publicKey();
 
-            balance -= amount;
-            document.getElementById('piBalance').textContent = `${balance.toFixed(2)} π (Test)`;
-            localStorage.setItem('piBalance', balance);
-            document.getElementById('sendStatus').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('sendStatus').classList.add('hidden');
-                document.getElementById('sendAddress').value = '';
-                document.getElementById('sendAmount').value = '';
-            }, 2000);
+                // Load account data
+                const account = await server.loadAccount(sourcePublicKey);
+
+                // Create transaction
+                const transaction = new StellarSdk.TransactionBuilder(account, {
+                    fee: StellarSdk.BASE_FEE,
+                    networkPassphrase: StellarSdk.Networks.TESTNET
+                })
+                .addOperation(StellarSdk.Operation.payment({
+                    destination: address,
+                    asset: StellarSdk.Asset.native(),
+                    amount: amount.toString()
+                }))
+                .setTimeout(30)
+                .build();
+
+                // Sign transaction
+                transaction.sign(sourceKeypair);
+
+                // Submit transaction
+                const result = await server.submitTransaction(transaction);
+                console.log('Transaction Success:', result);
+                
+                document.getElementById('sendStatus').classList.remove('hidden');
+                alert('Pi successfully sent!');
+
+                // Update balance locally
+                let currentBalance = parseFloat(localStorage.getItem('piBalance')) || 0;
+                localStorage.setItem('piBalance', (currentBalance - amount).toFixed(2));
+                document.getElementById('piBalance').textContent = `${(currentBalance - amount).toFixed(2)} π (Test)`;
+
+                setTimeout(() => {
+                    document.getElementById('sendStatus').classList.add('hidden');
+                    document.getElementById('sendAddress').value = '';
+                    document.getElementById('sendAmount').value = '';
+                    document.getElementById('privateKey').value = '';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Transaction Failed:', error);
+                alert('Transaction failed. Please check your private key and balance.');
+            }
         }
     </script>
 </body>
